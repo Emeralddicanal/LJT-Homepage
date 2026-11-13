@@ -1,6 +1,7 @@
 ---
 permalink: /cv/
 title: "CV"
+author: "Junteng Liu"
 author_profile: true
 ---
 
