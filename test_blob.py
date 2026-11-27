@@ -4,15 +4,33 @@ import json
 import base64
 import os
 import sys
+import subprocess
 
 # Try to get the GitHub token
 token = os.environ.get('GITHUB_TOKEN', '')
 if not token:
-    # Try to read from git config
-    import subprocess
+    # Try to get from git credential helper
     try:
-        result = subprocess.run(['git', 'config', '--global', 'github.token'], capture_output=True, text=True)
+        result = subprocess.run(
+            ['git', 'config', '--global', 'github.token'],
+            capture_output=True, text=True
+        )
         token = result.stdout.strip()
+    except:
+        pass
+
+if not token:
+    # Try to get from git credentials
+    try:
+        result = subprocess.run(
+            ['git', 'credential', 'fill'],
+            input='protocol=https\nhost=github.com\n\n',
+            capture_output=True, text=True
+        )
+        for line in result.stdout.split('\n'):
+            if line.startswith('password='):
+                token = line.split('=', 1)[1]
+                break
     except:
         pass
 
