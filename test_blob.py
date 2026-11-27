@@ -5,13 +5,8 @@ import base64
 import os
 import sys
 
-# Try to get the GitHub token
+# Try to get the GitHub token from the environment
 token = os.environ.get('GITHUB_TOKEN', '')
-if not token:
-    token = os.environ.get('GH_TOKEN', '')
-if not token:
-    token = os.environ.get('GITHUB_PAT', '')
-
 if not token:
     # Try to read from git config
     import subprocess
@@ -22,18 +17,18 @@ if not token:
         pass
 
 if not token:
-    print("No token found")
+    print("No GitHub token found")
     sys.exit(1)
 
-print(f"Token found: {bool(token)}, length: {len(token)}")
+print(f"Token found, length: {len(token)}")
 
-# Now try to create a blob using the Git Data API
+# Now let's try to create a blob using the Git Data API
 url = "https://api.github.com/repos/Emeralddicanal/LJT-Homepage/git/blobs"
 
-# Test with simple content first
-content = "Hello, World!"
+# Test with a simple blob first
+test_content = "Hello, World!"
 data = {
-    "content": base64.b64encode(content.encode()).decode(),
+    "content": base64.b64encode(test_content.encode()).decode(),
     "encoding": "base64"
 }
 
