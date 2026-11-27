@@ -6,27 +6,37 @@ import os
 import sys
 import subprocess
 
-# Try to get the GitHub token
-token = os.environ.get('GITHUB_TOKEN', '')
+# Try to get token from git config
+token = ''
+for key in ['GITHUB_TOKEN', 'GH_TOKEN', 'GITHUB_PAT']:
+    token = os.environ.get(key, '')
+    if token:
+        break
+
 if not token:
     # Try to get from git config
-    import subprocess
-    result = subprocess.run(['git', 'config', '--global', 'github.token'], capture_output=True, text=True)
-    token = result.stdout.strip()
+    for cmd in [
+        ['git', 'config', '--global', 'github.token'],
+        ['git', 'config', 'github.token'],
+    ]:
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            if result.stdout.strip():
+                token = result.stdout.strip()
+                break
+        except Exception as e:
+            print(f"Error running {' '.join(cmd)}: {e}")
 
-if not token:
-    print("No GitHub token found")
-    sys.exit(1)
-
-print(f"Token found, length: {len(token)}")
+print(f"Token found: {bool(token)}")
+print(f"Token length: {len(token)}")
 
 # Try to create a blob using the Git Data API
 url = "https://api.github.com/repos/Emeralddicanal/LJT-Homepage/git/blobs"
 
 # Test with simple content first
-content = "test content"
+test_content = "Hello, World!"
 data = {
-    "content": base64.b64encode(content.encode()).decode(),
+    "content": base64.b64encode(test_content.encode()).decode(),
     "encoding": "base64"
 }
 
@@ -42,12 +52,9 @@ req = urllib.request.Request(
 )
 
 try:
-    with urllib.request.urlopen(req) as response:
-        result = json.loads(response.read().decode())
-        print(f"Blob created: {result['sha']}")
-        print(f"URL: {result['url']}")
-except urllib.error.HTTPError as e:
-    print(f"HTTP Error: {e.code}")
-    print(e.read().decode())
+    with urllib.request.urlopen(req) as resp:
+        response = json.loads(resp.read().decode())
+        print(f"Blob created: {response['sha']}")
+        print(f"URL: {response['url']}")
 except Exception as e:
     print(f"Error: {e}")
