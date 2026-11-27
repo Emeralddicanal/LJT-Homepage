@@ -22,11 +22,11 @@ if not token:
 
 print(f"Token found, length: {len(token)}")
 
-# Try to create a blob using the Git Data API
+# Try to use the Git Data API
 url = "https://api.github.com/repos/Emeralddicanal/LJT-Homepage/git/blobs"
 
 # Test with simple content first
-content = "test content"
+content = "Hello, World!"
 data = {
     "content": base64.b64encode(content.encode()).decode(),
     "encoding": "base64"
@@ -48,8 +48,5 @@ try:
         result = json.loads(response.read().decode())
         print(f"Blob created: {result['sha']}")
         print(f"URL: {result['url']}")
-except urllib.error.HTTPError as e:
-    print(f"HTTP Error: {e.code}")
-    print(e.read().decode())
 except Exception as e:
     print(f"Error: {e}")
