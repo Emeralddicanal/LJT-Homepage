@@ -6,9 +6,15 @@ on:
 jobs:
   run:
     runs-on: ubuntu-latest
+    permissions: write-all
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
       - name: Run script
         run: |
           chmod +x test_blob.py
           python3 test_blob.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
