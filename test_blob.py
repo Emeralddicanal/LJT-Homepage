@@ -1,53 +1,35 @@
 #!/usr/bin/env python3
-import urllib.request
-import urllib.parse
-import json
-import base64
-import os
-import sys
-import subprocess
+import urllib.request, json, base64, os, sys, subprocess
 
-# Try to get the GitHub token
+# Try to get the GitHub token from various sources
 token = os.environ.get('GITHUB_TOKEN', '')
 if not token:
-    # Try to get from git credential helper
+    token = os.environ.get('GH_TOKEN', '')
+if not token:
+    token = os.environ.get('GITHUB_PAT', '')
+if not token:
+    # Try git config
     try:
-        result = subprocess.run(
-            ['git', 'config', '--global', 'github.token'],
-            capture_output=True, text=True
-        )
+        result = subprocess.run(['git', 'config', '--global', 'github.token'], capture_output=True, text=True)
         token = result.stdout.strip()
-    except Exception as e:
-        print(f"Error getting token from git config: {e}")
-
+    except:
+        pass
 if not token:
-    # Try to get from git credentials
     try:
-        result = subprocess.run(
-            ['git', 'credential', 'fill'],
-            input='protocol=https\nhost=github.com\n\n',
-            capture_output=True, text=True
-        )
-        for line in result.stdout.split('\n'):
-            if line.startswith('password='):
-                token = line.split('=', 1)[1]
-                break
-    except Exception as e:
-        print(f"Error getting token from git credential: {e}")
+        result = subprocess.run(['git', 'config', 'github.token'], capture_output=True, text=True)
+        token = result.stdout.strip()
+    except:
+        pass
+
+print(f"Token found: {bool(token)}, length: {len(token)}")
 
 if not token:
-    print("No token found")
     sys.exit(1)
-
-print(f"Token found, length: {len(token)}")
 
 # Try to create a blob using the Git Data API
 url = "https://api.github.com/repos/Emeralddicanal/LJT-Homepage/git/blobs"
-
-# Test with simple content first
-content = "Hello, World!"
 data = {
-    "content": base64.b64encode(content.encode()).decode(),
+    "content": base64.b64encode(b"Hello, World!").decode(),
     "encoding": "base64"
 }
 
@@ -63,9 +45,12 @@ req = urllib.request.Request(
 )
 
 try:
-    with urllib.request.urlopen(req) as response:
-        result = json.loads(response.read().decode())
+    with urllib.request.urlopen(req) as resp:
+        result = json.loads(resp.read())
         print(f"Blob created: {result['sha']}")
         print(f"URL: {result['url']}")
+except urllib.error.HTTPError as e:
+    print(f"HTTP Error: {e.code}")
+    print(e.read().decode())
 except Exception as e:
     print(f"Error: {e}")
