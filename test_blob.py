@@ -9,12 +9,9 @@ import subprocess
 # Try to get the GitHub token
 token = os.environ.get('GITHUB_TOKEN', '')
 if not token:
-    # Try to get from git credential helper
+    # Try to read from git config
     try:
-        result = subprocess.run(
-            ['git', 'config', '--global', 'github.token'],
-            capture_output=True, text=True
-        )
+        result = subprocess.run(['git', 'config', '--global', 'github.token'], capture_output=True, text=True)
         token = result.stdout.strip()
     except:
         pass
@@ -29,9 +26,9 @@ print(f"Token found, length: {len(token)}")
 url = "https://api.github.com/repos/Emeralddicanal/LJT-Homepage/git/blobs"
 
 # Test with simple content first
-content = "test content"
+test_content = "Hello, World!"
 data = {
-    "content": base64.b64encode(content.encode()).decode(),
+    "content": base64.b64encode(test_content.encode()).decode(),
     "encoding": "base64"
 }
 
@@ -51,5 +48,8 @@ try:
         result = json.loads(response.read().decode())
         print(f"Blob created: {result['sha']}")
         print(f"URL: {result['url']}")
+except urllib.error.HTTPError as e:
+    print(f"HTTP Error: {e.code}")
+    print(e.read().decode())
 except Exception as e:
     print(f"Error: {e}")
