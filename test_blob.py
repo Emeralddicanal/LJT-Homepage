@@ -6,12 +6,15 @@ import os
 import sys
 import subprocess
 
-# Try to get the GitHub token
+# Try to get the GitHub token from the environment
 token = os.environ.get('GITHUB_TOKEN', '')
 if not token:
-    # Try to read from git config
+    # Try to get from git credential helper
     try:
-        result = subprocess.run(['git', 'config', '--global', 'github.token'], capture_output=True, text=True)
+        result = subprocess.run(
+            ['git', 'config', '--global', 'github.token'],
+            capture_output=True, text=True
+        )
         token = result.stdout.strip()
     except:
         pass
@@ -22,13 +25,13 @@ if not token:
 
 print(f"Token found, length: {len(token)}")
 
-# Try to use the Git Data API to create a blob
+# Try to use the GitHub API to create a blob
 url = "https://api.github.com/repos/Emeralddicanal/LJT-Homepage/git/blobs"
 
-# Test with simple content first
-test_content = "Hello, World!"
+# Test with a simple blob first
+content = "Hello, World!"
 data = {
-    "content": base64.b64encode(test_content.encode()).decode(),
+    "content": base64.b64encode(content.encode()).decode(),
     "encoding": "base64"
 }
 
