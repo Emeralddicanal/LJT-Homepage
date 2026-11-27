@@ -20,8 +20,8 @@ if not token:
 
 print(f"Token found: {bool(token)}, length: {len(token)}")
 
+# Try to create a blob using the Git Data API
 if token:
-    # Try to create a blob using the Git Data API
     req = urllib.request.Request(
         "https://api.github.com/repos/Emeralddicanal/LJT-Homepage/git/blobs",
         data=json.dumps({"content": base64.b64encode(b"test content").decode(), "encoding": "base64"}).encode(),
