@@ -1,0 +1,14 @@
+name: Run Script
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run script
+        run: |
+          chmod +x test_blob.py
+          python3 test_blob.py
